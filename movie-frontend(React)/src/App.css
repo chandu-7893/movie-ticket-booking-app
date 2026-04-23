@@ -1,0 +1,711 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0b0b0f;
+  color: white;
+}
+
+.container {
+  min-height: 100vh;
+  padding: 20px 40px;
+  background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.85)),
+              url("https://images.unsplash.com/photo-1489599849927-2ee91cede3ba");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+/* 🎬 TITLE */
+.title {
+  font-size: 42px;
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+  animation: fadeIn 1s ease-in-out;
+}
+
+/* 🔍 SEARCH BAR */
+.search {
+  width: 100%;
+  max-width: 500px;
+  padding: 14px 20px;
+  border-radius: 30px;
+  border: 1px solid rgba(255,255,255,0.12);
+  outline: none;
+  font-size: 16px;
+  background: rgba(20,20,20,0.85);
+  color: white;
+  margin: 20px 0 30px 0;
+}
+
+.search::placeholder {
+  color: #bbb;
+}
+.search {
+  display: block;
+  margin: 0 auto 20px;
+}
+
+.search:focus {
+  box-shadow: 0 0 15px rgba(255, 75, 43, 0.4);
+}
+
+/* ➕ FORM */
+.form {
+  max-width: 500px;
+  margin: 30px auto;
+  padding: 30px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+}
+
+.form h2 {
+  color: white;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.form input {
+  width: 100%;
+  margin: 10px 0;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.14);
+  color: white;
+  box-sizing: border-box;
+}
+
+.form input::placeholder {
+  color: #ddd;
+}
+
+.form button {
+  width: 100%;
+  margin-top: 15px;
+}
+/* 🎬 MOVIE GRID */
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.movie-card {
+  background: #181818;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.35s ease;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+}
+
+.movie-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 18px 35px rgba(0,0,0,0.65);
+}
+
+.poster {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+}
+
+.movie-card h2,
+.movie-card p {
+  padding: 0 14px;
+}
+
+.movie-card h2 {
+  margin-top: 14px;
+  font-size: 22px;
+}
+
+.movie-card p {
+  color: #d4d4d4;
+  margin: 8px 0;
+}
+
+/* 🔘 BUTTON GROUP */
+.btn-group {
+  display: flex;
+  gap: 12px;
+  padding: 0 20px 20px;
+  margin-top: 14px;
+}
+
+.btn-group button {
+  flex: 1;
+  padding: 14px 0;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+  transition: 0.3s;
+} 
+
+/* 🎟 BOOK BUTTON */
+.btn-group button:first-child {
+  background: linear-gradient(45deg, #ff4b2b, #ff416c);
+}
+
+/* ❌ DELETE BUTTON */
+.delete-btn {
+  background: linear-gradient(45deg, #b30000, #ff0000);
+}
+
+/* HOVER */
+.movie-card:hover {
+  transform: scale(1.05);
+  transition: 0.3s;
+}
+.movie-card {
+  animation: fadeIn 0.6s ease;
+}
+.btn-group button:first-child {
+  background: linear-gradient(45deg, #ff4b2b, #ff416c);
+  box-shadow: 0px 4px 15px rgba(255,75,43,0.5);
+}
+
+/* ✨ ANIMATIONS */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* 📱 RESPONSIVE */
+@media (max-width: 600px) {
+  .search {
+    width: 90%;
+  }
+
+  .form {
+    width: 90%;
+  }
+
+  .movie-grid {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+
+  .btn-group {
+    flex-direction: column;
+    padding: 0 16px 16px;
+  }
+
+  .btn-group button {
+    width: 100%;
+  }
+
+  .poster {
+    height: 220px;
+  }
+
+  .movie-card h2 {
+    font-size: 28px;
+  }
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.title {
+  font-size: 34px;
+  font-weight: 800;
+  color: #e50914;
+  letter-spacing: 1px;
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.welcome-text {
+  color: #f5f5f5;
+  font-size: 15px;
+}
+
+.logout-btn {
+  padding: 10px 18px;
+  border: none;
+  background: linear-gradient(45deg, #ff0000, #ff4b2b);
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.logout-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0px 0px 10px rgba(255, 0, 0, 0.6);
+}
+
+.success-toast {
+  position: fixed;
+  top: 20px;
+  right: -320px;
+  background: linear-gradient(135deg, #00c853, #69f0ae);
+  color: white;
+  padding: 15px 25px;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.5s forwards, fadeOut 0.5s forwards 2s;
+  z-index: 9999;
+}
+
+@keyframes slideIn {
+  from {
+    right: -320px;
+    opacity: 0;
+  }
+  to {
+    right: 20px;
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    right: 20px;
+    opacity: 1;
+  }
+  to {
+    right: -320px;
+    opacity: 0;
+  }
+}
+
+.logout-toast {
+  position: fixed;
+  top: 20px;
+  right: -320px;
+  background: linear-gradient(135deg, #ff9800, #ffb74d);
+  color: white;
+  padding: 15px 25px;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.5s forwards, fadeOut 0.5s forwards 2s;
+  z-index: 9999;
+}
+
+.movie-added-toast {
+  position: fixed;
+  top: 100px;
+  right: -350px;
+  background: linear-gradient(135deg, #ff416c, #ff4b2b);
+  color: white;
+  padding: 16px 28px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0 8px 24px rgba(255, 75, 43, 0.35);
+  animation: slideIn 0.5s forwards, fadeOut 0.5s forwards 2s;
+  z-index: 9999;
+}
+@keyframes slideIn {
+  from {
+    right: -350px;
+    opacity: 0;
+  }
+  to {
+    right: 20px;
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    right: 20px;
+    opacity: 1;
+  }
+  to {
+    right: -350px;
+    opacity: 0;
+  }
+}
+
+.delete-toast {
+  position: fixed;
+  top: 140px;
+  right: -350px;
+
+  background: linear-gradient(135deg, #ff1744, #ff5252);
+  color: white;
+
+  padding: 16px 28px;
+  border-radius: 12px;
+
+  font-size: 18px;
+  font-weight: bold;
+
+  box-shadow: 0 8px 24px rgba(255, 0, 0, 0.4);
+
+  animation: slideIn 0.5s forwards, fadeOut 0.5s forwards 2s;
+
+  z-index: 9999;
+}
+
+/* 🔥 Overlay background */
+.confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+}
+
+/* 💎 Glass confirm box */
+.confirm-box {
+  width: 350px;
+  padding: 25px;
+  border-radius: 15px;
+
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+
+  border: 1px solid rgba(255,255,255,0.2);
+
+  color: white;
+  text-align: center;
+
+  animation: popUp 0.4s ease;
+}
+
+.confirm-box h3 {
+  margin-bottom: 10px;
+}
+
+.confirm-box p {
+  margin-bottom: 20px;
+  color: #ddd;
+}
+
+/* buttons */
+.confirm-buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+.ok-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  background: #ff4b2b;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.ok-btn:hover {
+  transform: scale(1.05);
+}
+
+.cancel-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  background: gray;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.cancel-btn:hover {
+  transform: scale(1.05);
+}
+
+/* animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popUp {
+  from {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+button {
+  background: #e50914;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #f6121d;
+  transform: translateY(-2px);
+}
+
+.delete-btn {
+  background: #333;
+}
+
+.delete-btn:hover {
+  background: #555;
+}
+
+
+.loader {
+  width: 55px;
+  height: 55px;
+  border: 5px solid rgba(255, 255, 255, 0.2);
+  border-top: 5px solid #ff4b2b;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 60px auto;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  margin-bottom: 20px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.title {
+  color: white;
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.welcome-text {
+  color: white;
+  margin-right: 15px;
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .movie-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form {
+    width: 90%;
+    padding: 20px;
+  }
+
+  .search {
+    width: 90%;
+  }
+}
+
+.booking-toast {
+  position: fixed;
+  top: 180px;
+  right: -350px;
+  background: linear-gradient(135deg, #00c853, #64dd17);
+  color: white;
+  padding: 16px 28px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0 8px 24px rgba(0, 200, 83, 0.35);
+  animation: slideIn 0.5s forwards, fadeOut 0.5s forwards 2s;
+  z-index: 9999;
+}
+
+
+.music-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #ff416c, #ff4b2b);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 14px 18px;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+  z-index: 9999;
+  transition: 0.3s;
+}
+
+.music-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(255, 75, 43, 0.6);
+}
+
+.music-btn {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 14px 20px;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+
+  color: white;
+  font-weight: bold;
+  font-size: 15px;
+
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  transition: 0.4s;
+
+  z-index: 9999;
+}
+
+.music-btn:hover {
+  transform: scale(1.08);
+}
+
+/* 🎧 rotating disc */
+.disc {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(45deg, #ff416c, #ff4b2b);
+
+  box-shadow: 0 0 15px rgba(255, 75, 43, 0.6);
+}
+
+.music-btn.playing .disc {
+  animation: spinDisc 3s linear infinite;
+}
+
+.icon {
+  font-size: 18px;
+}
+
+/* 🌈 neon glow */
+.music-btn.playing {
+  box-shadow: 0 0 25px rgba(255, 75, 43, 0.8),
+              0 0 50px rgba(255, 75, 43, 0.4);
+}
+
+/* 🎵 wave animation */
+.wave {
+  display: flex;
+  align-items: end;
+  gap: 3px;
+  height: 18px;
+}
+
+.wave span {
+  width: 3px;
+  background: linear-gradient(#ff416c, #ff4b2b);
+  border-radius: 3px;
+  animation: wave 0.8s infinite ease-in-out;
+}
+
+.wave span:nth-child(1) { height: 8px; animation-delay: 0s; }
+.wave span:nth-child(2) { height: 14px; animation-delay: 0.2s; }
+.wave span:nth-child(3) { height: 10px; animation-delay: 0.4s; }
+.wave span:nth-child(4) { height: 16px; animation-delay: 0.1s; }
+
+/* ✨ floating effect */
+.music-btn {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* 🔄 animations */
+@keyframes spinDisc {
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(2); }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0px); }
+}
+
+/* 🎯 text */
+.music-text {
+  font-size: 14px;
+}

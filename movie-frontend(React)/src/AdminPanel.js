@@ -17,6 +17,9 @@ function AdminPanel({ token, movies, refreshMovies }) {
   const [toastMsg, setToastMsg] = useState("");
   const [toastType, setToastType] = useState("");
 
+  const rows = ["A", "B", "C", "D", "E"];
+  const seatsPerRow = 8;
+
   const showToast = (message, type = "error") => {
     setToastMsg(message);
     setToastType(type);
@@ -24,16 +27,6 @@ function AdminPanel({ token, movies, refreshMovies }) {
       setToastMsg("");
       setToastType("");
     }, 2500);
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setNewMovie({ ...newMovie, [name]: value });
-  };
-
-  const clearForm = () => {
-    setNewMovie(emptyMovie);
-    setEditMovieId(null);
   };
 
   const handleSessionExpired = () => {
@@ -44,8 +37,36 @@ function AdminPanel({ token, movies, refreshMovies }) {
     }, 1200);
   };
 
+  const handleChange = (e) => {
+    setNewMovie({ ...newMovie, [e.target.name]: e.target.value });
+  };
+
+  const clearForm = () => {
+    setNewMovie(emptyMovie);
+    setEditMovieId(null);
+  };
+
+  const getSeatStatus = (movie, seat) => {
+    const bookedSeats = movie.bookedSeats
+      ? movie.bookedSeats.split(",").filter(Boolean)
+      : [];
+
+    const lockedSeats = movie.lockedSeats
+      ? movie.lockedSeats.split(",").filter(Boolean)
+      : [];
+
+    if (bookedSeats.includes(seat)) return "booked";
+    if (lockedSeats.includes(seat)) return "locked";
+    return "available";
+  };
+
   const addMovie = () => {
-    if (!newMovie.name || !newMovie.theatre || !newMovie.seats || !newMovie.price) {
+    if (
+      !newMovie.name ||
+      !newMovie.theatre ||
+      !newMovie.seats ||
+      !newMovie.price
+    ) {
       showToast("Please fill all fields", "error");
       return;
     }
@@ -63,11 +84,7 @@ function AdminPanel({ token, movies, refreshMovies }) {
           handleSessionExpired();
           return null;
         }
-
-        if (!res.ok) {
-          throw new Error("Failed to add movie");
-        }
-
+        if (!res.ok) throw new Error("Failed to add movie");
         return res.json();
       })
       .then((data) => {
@@ -76,10 +93,7 @@ function AdminPanel({ token, movies, refreshMovies }) {
         clearForm();
         refreshMovies();
       })
-      .catch((err) => {
-        console.error(err);
-        showToast("Error adding movie", "error");
-      });
+      .catch(() => showToast("Error adding movie", "error"));
   };
 
   const editMovie = (movie) => {
@@ -91,15 +105,16 @@ function AdminPanel({ token, movies, refreshMovies }) {
       imageUrl: movie.imageUrl || "",
       price: movie.price || "",
     });
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const updateMovie = () => {
-    if (!newMovie.name || !newMovie.theatre || !newMovie.seats || !newMovie.price) {
+    if (
+      !newMovie.name ||
+      !newMovie.theatre ||
+      !newMovie.seats ||
+      !newMovie.price
+    ) {
       showToast("Please fill all fields", "error");
       return;
     }
@@ -117,11 +132,7 @@ function AdminPanel({ token, movies, refreshMovies }) {
           handleSessionExpired();
           return null;
         }
-
-        if (!res.ok) {
-          throw new Error("Failed to update movie");
-        }
-
+        if (!res.ok) throw new Error("Failed to update movie");
         return res.json();
       })
       .then((data) => {
@@ -130,10 +141,7 @@ function AdminPanel({ token, movies, refreshMovies }) {
         clearForm();
         refreshMovies();
       })
-      .catch((err) => {
-        console.error(err);
-        showToast("Error updating movie", "error");
-      });
+      .catch(() => showToast("Error updating movie", "error"));
   };
 
   const deleteMovie = (id) => {
@@ -153,11 +161,7 @@ function AdminPanel({ token, movies, refreshMovies }) {
           handleSessionExpired();
           return null;
         }
-
-        if (!res.ok) {
-          throw new Error("Failed to delete movie");
-        }
-
+        if (!res.ok) throw new Error("Failed to delete movie");
         return res.text();
       })
       .then((data) => {
@@ -167,28 +171,102 @@ function AdminPanel({ token, movies, refreshMovies }) {
         setDeleteId(null);
         refreshMovies();
       })
-      .catch((err) => {
-        console.error(err);
-        showToast("Error deleting movie", "error");
-      });
+      .catch(() => showToast("Error deleting movie", "error"));
   };
 
-  const cancelDelete = () => {
-    setShowConfirm(false);
-    setDeleteId(null);
+  const unlockSeat = (movieId, seat) => {
+    fetch(`http://localhost:8080/api/admin/unlock/${movieId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify([seat]),
+    })
+      .then((res) => {
+        if (res.status === 401) {
+          handleSessionExpired();
+          return null;
+        }
+        if (!res.ok) throw new Error("Failed to unlock seat");
+        return res.text();
+      })
+      .then((data) => {
+        if (data === null) return;
+        showToast(`${seat} unlocked successfully`, "success");
+        refreshMovies();
+      })
+      .catch(() => showToast("Error unlocking seat", "error"));
   };
+
+  const removeBookedSeat = (movieId, seat) => {
+    fetch(`http://localhost:8080/api/admin/remove-booked/${movieId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify([seat]),
+    })
+      .then((res) => {
+        if (res.status === 401) {
+          handleSessionExpired();
+          return null;
+        }
+        if (!res.ok) throw new Error("Failed to remove booked seat");
+        return res.text();
+      })
+      .then((data) => {
+        if (data === null) return;
+        showToast(`${seat} removed from booked seats`, "success");
+        refreshMovies();
+      })
+      .catch(() => showToast("Error removing booked seat", "error"));
+  };
+
+  const totalMovies = movies.length;
+
+  const totalSeats = movies.reduce(
+    (sum, movie) => sum + Number(movie.seats || 0),
+    0,
+  );
+
+  const totalBooked = movies.reduce((sum, movie) => {
+    const count = movie.bookedSeats
+      ? movie.bookedSeats.split(",").filter(Boolean).length
+      : 0;
+    return sum + count;
+  }, 0);
+
+  const totalLocked = movies.reduce((sum, movie) => {
+    const count = movie.lockedSeats
+      ? movie.lockedSeats.split(",").filter(Boolean).length
+      : 0;
+    return sum + count;
+  }, 0);
+
+  const totalAvailable = totalSeats - totalBooked - totalLocked;
+
+  const totalRevenue = movies.reduce((sum, movie) => {
+    const bookedCount = movie.bookedSeats
+      ? movie.bookedSeats.split(",").filter(Boolean).length
+      : 0;
+    return sum + bookedCount * Number(movie.price || 0);
+  }, 0);
 
   return (
     <>
       {toastMsg && (
-        <div className={toastType === "success" ? "toast-success" : "toast-error"}>
+        <div
+          className={toastType === "success" ? "toast-success" : "toast-error"}
+        >
           {toastMsg}
         </div>
       )}
 
       <div className="admin-wrapper">
         <div className="admin-panel">
-          <h2>{editMovieId ? "Edit Movie" : "Add Movie📽️"}</h2>
+          <h2>{editMovieId ? "Edit Movie" : "Add Movie 📽️"}</h2>
 
           <div className="admin-form">
             <div className="input-group">
@@ -263,6 +341,48 @@ function AdminPanel({ token, movies, refreshMovies }) {
           <p className="admin-note">Manage your movie collection with style.</p>
         </div>
 
+        <div className="pro-dashboard">
+          <h2>📊 Admin Dashboard</h2>
+
+          <div className="dashboard-cards">
+            <div className="dash-card">
+              <span>🎬</span>
+              <h3>{totalMovies}</h3>
+              <p>Total Movies</p>
+            </div>
+
+            <div className="dash-card">
+              <span>💺</span>
+              <h3>{totalSeats}</h3>
+              <p>Total Seats</p>
+            </div>
+
+            <div className="dash-card booked">
+              <span>🎟</span>
+              <h3>{totalBooked}</h3>
+              <p>Booked Seats</p>
+            </div>
+
+            <div className="dash-card locked">
+              <span>🔒</span>
+              <h3>{totalLocked}</h3>
+              <p>Locked Seats</p>
+            </div>
+
+            <div className="dash-card available">
+              <span>✅</span>
+              <h3>{totalAvailable}</h3>
+              <p>Available Seats</p>
+            </div>
+
+            <div className="dash-card revenue">
+              <span>💰</span>
+              <h3>₹{totalRevenue}</h3>
+              <p>Total Revenue</p>
+            </div>
+          </div>
+        </div>
+
         <div className="movie-manage-section">
           <h3 className="manage-title">Manage Movies</h3>
 
@@ -270,38 +390,133 @@ function AdminPanel({ token, movies, refreshMovies }) {
             {movies.length === 0 ? (
               <p className="empty-text">No movies available</p>
             ) : (
-              movies.map((movie) => (
-                <div className="manage-card" key={movie.id}>
-                  <img
-                    src={movie.imageUrl || "https://picsum.photos/300/200"}
-                    alt={movie.name}
-                    className="manage-poster"
-                  />
+              movies.map((movie) => {
+                const bookedCount = movie.bookedSeats
+                  ? movie.bookedSeats.split(",").filter(Boolean).length
+                  : 0;
 
-                  <div className="manage-content">
-                    <h4>{movie.name}</h4>
-                    <p>📍 {movie.theatre}</p>
-                    <p>🎟 Seats: {movie.seats}</p>
-                    <p>💰 Price: ₹{movie.price}</p>
+                const lockedCount = movie.lockedSeats
+                  ? movie.lockedSeats.split(",").filter(Boolean).length
+                  : 0;
+
+                const availableCount =
+                  Number(movie.seats) - bookedCount - lockedCount;
+
+                return (
+                  <div className="manage-card pro-card" key={movie.id}>
+                    <img
+                      src={movie.imageUrl || "https://picsum.photos/300/200"}
+                      alt={movie.name}
+                      className="manage-poster"
+                    />
+
+                    <div className="manage-content">
+                      <h4>{movie.name}</h4>
+                      <p>📍 {movie.theatre}</p>
+                      <p>🎟 Seats: {movie.seats}</p>
+                      <p>💰 Price: ₹{movie.price}</p>
+                    </div>
+
+                    <div className="seat-stats">
+                      <div>
+                        <h4>{movie.seats}</h4>
+                        <p>Total</p>
+                      </div>
+
+                      <div>
+                        <h4>{bookedCount}</h4>
+                        <p>Booked</p>
+                      </div>
+
+                      <div>
+                        <h4>{lockedCount}</h4>
+                        <p>Locked</p>
+                      </div>
+
+                      <div>
+                        <h4>{availableCount}</h4>
+                        <p>Available</p>
+                      </div>
+                    </div>
+
+                    <div className="admin-seat-map">
+                      <h5>🎟 Visual Seat Map</h5>
+
+                      <div className="seat-map-legend">
+                        <span>🟢 Available</span>
+                        <span>🔴 Booked</span>
+                        <span>🟡 Locked</span>
+                      </div>
+
+                      <div className="admin-screen">SCREEN</div>
+
+                      <div className="seat-scroll-area">
+                        <div className="admin-seat-grid">
+                          {rows.map((row) => (
+                            <div className="admin-seat-row" key={row}>
+                              <span className="admin-row-label">{row}</span>
+
+                              {Array.from({ length: seatsPerRow }, (_, i) => {
+                                const seat = `${row}${i + 1}`;
+                                const status = getSeatStatus(movie, seat);
+
+                                return (
+                                  <React.Fragment key={seat}>
+                                    {i === 4 && (
+                                      <div className="center-aisle"></div>
+                                    )}
+
+                                    <button
+                                      className={`admin-seat ${status}`}
+                                      onClick={() => {
+                                        if (status === "locked") {
+                                          unlockSeat(movie.id, seat);
+                                        } else if (status === "booked") {
+                                          removeBookedSeat(movie.id, seat);
+                                        }
+                                      }}
+                                      title={
+                                        status === "locked"
+                                          ? "Click to unlock seat"
+                                          : status === "booked"
+                                            ? "Click to remove booked seat"
+                                            : "Available seat"
+                                      }
+                                    >
+                                      {seat}
+                                    </button>
+                                  </React.Fragment>
+                                );
+                              })}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <p className="seat-map-note">
+                        Click 🔴 booked seats to remove booking, click 🟡 locked
+                        seats to unlock.
+                      </p>
+                    </div>
+
+                    <div className="manage-buttons">
+                      <button
+                        className="edit-btn"
+                        onClick={() => editMovie(movie)}
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        className="delete-btn"
+                        onClick={() => deleteMovie(movie.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-
-                  <div className="manage-buttons">
-                    <button
-                      className="edit-btn"
-                      onClick={() => editMovie(movie)}
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      className="delete-btn"
-                      onClick={() => deleteMovie(movie.id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
@@ -316,7 +531,11 @@ function AdminPanel({ token, movies, refreshMovies }) {
                 <button className="confirm-delete" onClick={confirmDelete}>
                   Yes, Delete
                 </button>
-                <button className="confirm-cancel" onClick={cancelDelete}>
+
+                <button
+                  className="confirm-cancel"
+                  onClick={() => setShowConfirm(false)}
+                >
                   Cancel
                 </button>
               </div>

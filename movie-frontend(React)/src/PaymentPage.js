@@ -2,33 +2,18 @@ import React, { useState } from "react";
 import "./PaymentPage.css";
 
 function PaymentPage({ movie, selectedSeats, onBack, onPaymentSuccess }) {
-  const [paymentMethod, setPaymentMethod] = useState("UPI");
-  const [processing, setProcessing] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
-
-  // UPI
+  const [method, setMethod] = useState("upi");
   const [upiId, setUpiId] = useState("");
+  const [bank, setBank] = useState("");
 
-  // Card
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvv, setCvv] = useState("");
-  const [cardHolder, setCardHolder] = useState("");
+  const [card, setCard] = useState({
+    number: "",
+    name: "",
+    expiry: "",
+    cvv: "",
+  });
 
-  // Net Banking
-  const [selectedBank, setSelectedBank] = useState("");
-
-  const banks = [
-    "State Bank of India",
-    "HDFC Bank",
-    "ICICI Bank",
-    "Axis Bank",
-    "Kotak Mahindra Bank",
-    "Punjab National Bank",
-    "Bank of Baroda",
-    "Canara Bank",
-  ];
+  const [success, setSuccess] = useState(false);
 
   const getSeatPrice = (seat) => {
     const row = seat.charAt(0);
@@ -40,208 +25,192 @@ function PaymentPage({ movie, selectedSeats, onBack, onPaymentSuccess }) {
     0
   );
 
-  const formatCardNumber = (value) => {
-    const digits = value.replace(/\D/g, "").slice(0, 16);
-    return digits.replace(/(.{4})/g, "$1 ").trim();
-  };
+  const handlePay = () => {
+    if (method === "upi" && !upiId.trim()) {
+      alert("Please enter UPI ID");
+      return;
+    }
 
-  const formatExpiry = (value) => {
-    const digits = value.replace(/\D/g, "").slice(0, 4);
-    if (digits.length >= 3) return digits.slice(0, 2) + "/" + digits.slice(2);
-    return digits;
-  };
+    if (method === "netbanking" && !bank) {
+      alert("Please select your bank");
+      return;
+    }
 
-  const validate = () => {
-    if (paymentMethod === "UPI") {
-      if (!upiId.match(/^[\w.-]{2,}@[a-zA-Z]{2,}$/)) {
-        setError("Enter a valid UPI ID (e.g. name@upi)");
-        return false;
-      }
-    } else if (paymentMethod === "Card") {
-      if (cardHolder.trim().length < 3) {
-        setError("Enter cardholder name.");
-        return false;
-      }
-      if (cardNumber.replace(/\s/g, "").length !== 16) {
-        setError("Enter a valid 16-digit card number.");
-        return false;
-      }
-      if (!expiry.match(/^(0[1-9]|1[0-2])\/\d{2}$/)) {
-        setError("Enter a valid expiry (MM/YY).");
-        return false;
-      }
-      if (cvv.length !== 3) {
-        setError("Enter a valid 3-digit CVV.");
-        return false;
-      }
-    } else if (paymentMethod === "Net Banking") {
-      if (!selectedBank) {
-        setError("Please select a bank.");
-        return false;
+    if (method === "card") {
+      if (!card.number || !card.name || !card.expiry || !card.cvv) {
+        alert("Please fill all card details");
+        return;
       }
     }
-    return true;
-  };
 
-  const handlePayment = () => {
-    setError("");
-    if (!validate()) return;
+    setSuccess(true);
 
-    setProcessing(true);
     setTimeout(() => {
-      setProcessing(false);
-      setSuccess(true);
-      setTimeout(() => {
-        onPaymentSuccess(movie.id, selectedSeats);
-      }, 1500);
-    }, 2500);
+      onPaymentSuccess(movie.id, selectedSeats);
+    }, 1800);
   };
+
+ if (success) {
+  return (
+    <div className="payment-page">
+      <div className="success-box">
+        <div className="success-icon">✅</div>
+        <h1>Payment Successful</h1>
+        <p>Generating your ticket...</p>
+      </div>
+    </div>
+  );
+}
 
   return (
     <div className="payment-page">
-      <div className="payment-box">
-        <h2>💳 Payment Page</h2>
+      <div className="payment-card">
+        <h1>Complete Payment</h1>
 
-        <p><strong>Movie:</strong> {movie.name}</p>
-        <p><strong>Theatre:</strong> {movie.theatre}</p>
-        <p><strong>Selected Seats:</strong> {selectedSeats.join(", ")}</p>
-
-        <div className="seat-price-list">
-          <h3>Seat Details</h3>
-          {selectedSeats.map((seat, index) => (
-            <p key={index}>
-              {seat} - ₹{getSeatPrice(seat)}{" "}
-              {seat.startsWith("A") || seat.startsWith("B") ? "(VIP)" : "(Regular)"}
-            </p>
-          ))}
+        <div className="movie-summary">
+          <h2>{movie.name}</h2>
+          <p>📍 {movie.theatre}</p>
+          <p>🎟 Seats: {selectedSeats.join(", ")}</p>
+          <h3>Total: ₹{totalAmount}</h3>
         </div>
 
-        <h3>Total Amount: ₹{totalAmount}</h3>
+        {/* PAYMENT TABS */}
+        <div className="payment-tabs">
+          <button
+            className={method === "upi" ? "active" : ""}
+            onClick={() => setMethod("upi")}
+          >
+            UPI
+          </button>
 
-        {/* Payment Method Selection */}
-        <div className="payment-methods">
-          {["UPI", "Card", "Net Banking"].map((method) => (
-            <label key={method}>
-              <input
-                type="radio"
-                value={method}
-                checked={paymentMethod === method}
-                onChange={(e) => {
-                  setPaymentMethod(e.target.value);
-                  setError("");
-                }}
-                disabled={processing || success}
-              />
-              {method}
-            </label>
-          ))}
+          <button
+            className={method === "netbanking" ? "active" : ""}
+            onClick={() => setMethod("netbanking")}
+          >
+            NetBanking
+          </button>
+
+          <button
+            className={method === "card" ? "active" : ""}
+            onClick={() => setMethod("card")}
+          >
+            Card
+          </button>
         </div>
 
-        {/* UPI Fields */}
-        {paymentMethod === "UPI" && (
-          <div className="payment-fields">
+        {/* UPI */}
+        {method === "upi" && (
+          <div className="payment-form">
             <label>UPI ID</label>
             <input
               type="text"
-              placeholder="e.g. yourname@upi"
+              placeholder="example@upi"
               value={upiId}
               onChange={(e) => setUpiId(e.target.value)}
-              disabled={processing || success}
             />
+
+            <div className="upi-box">
+              <p>Scan & Pay</p>
+              <div className="qr">QR</div>
+            </div>
           </div>
         )}
 
-        {/* Card Fields */}
-        {paymentMethod === "Card" && (
-          <div className="payment-fields">
-            <label>Cardholder Name</label>
-            <input
-              type="text"
-              placeholder="Name on card"
-              value={cardHolder}
-              onChange={(e) => setCardHolder(e.target.value)}
-              disabled={processing || success}
-            />
+        {/* NETBANKING */}
+        {method === "netbanking" && (
+          <div className="payment-form">
+            <label>Select Bank</label>
 
+            <select
+              value={bank}
+              onChange={(e) => setBank(e.target.value)}
+              className="bank-select"
+            >
+              <option value="">Choose your bank</option>
+              <option value="SBI">State Bank of India</option>
+              <option value="HDFC">HDFC Bank</option>
+              <option value="ICICI">ICICI Bank</option>
+              <option value="AXIS">Axis Bank</option>
+              <option value="KOTAK">Kotak Mahindra Bank</option>
+              <option value="CANARA">Canara Bank</option>
+            </select>
+
+            <div className="netbanking-box">
+              <h3>🏦 Secure NetBanking</h3>
+              <p>
+                Selected Bank: <strong>{bank || "Not selected"}</strong>
+              </p>
+              <p className="secure-text">
+                🔒 You will be redirected to bank login page
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* CARD */}
+        {method === "card" && (
+          <div className="payment-form">
             <label>Card Number</label>
             <input
               type="text"
               placeholder="1234 5678 9012 3456"
-              value={cardNumber}
-              onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-              maxLength={19}
-              disabled={processing || success}
+              maxLength="19"
+              value={card.number}
+              onChange={(e) =>
+                setCard({ ...card, number: e.target.value })
+              }
             />
 
-            <div className="card-row">
+            <label>Card Holder Name</label>
+            <input
+              type="text"
+              placeholder="CHANDU REDDY"
+              value={card.name}
+              onChange={(e) =>
+                setCard({ ...card, name: e.target.value })
+              }
+            />
+
+            <div className="row-inputs">
               <div>
-                <label>Expiry (MM/YY)</label>
+                <label>Expiry</label>
                 <input
                   type="text"
                   placeholder="MM/YY"
-                  value={expiry}
-                  onChange={(e) => setExpiry(formatExpiry(e.target.value))}
-                  maxLength={5}
-                  disabled={processing || success}
+                  maxLength="5"
+                  value={card.expiry}
+                  onChange={(e) =>
+                    setCard({ ...card, expiry: e.target.value })
+                  }
                 />
               </div>
+
               <div>
                 <label>CVV</label>
                 <input
                   type="password"
-                  placeholder="•••"
-                  value={cvv}
-                  onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 3))}
-                  maxLength={3}
-                  disabled={processing || success}
+                  placeholder="123"
+                  maxLength="3"
+                  value={card.cvv}
+                  onChange={(e) =>
+                    setCard({ ...card, cvv: e.target.value })
+                  }
                 />
               </div>
             </div>
           </div>
         )}
 
-        {/* Net Banking Fields */}
-        {paymentMethod === "Net Banking" && (
-          <div className="payment-fields">
-            <label>Select Bank</label>
-            <select
-              value={selectedBank}
-              onChange={(e) => setSelectedBank(e.target.value)}
-              disabled={processing || success}
-            >
-              <option value="">-- Choose your bank --</option>
-              {banks.map((bank) => (
-                <option key={bank} value={bank}>{bank}</option>
-              ))}
-            </select>
-          </div>
-        )}
+        {/* BUTTONS */}
+        <div className="payment-buttons">
+          <button className="pay-btn" onClick={handlePay}>
+            Pay ₹{totalAmount}
+          </button>
 
-        {error && <p className="payment-error">⚠️ {error}</p>}
-
-        {processing && (
-          <div className="payment-status processing">
-            <div className="spinner"></div>
-            <p>Processing your payment via {paymentMethod}...</p>
-          </div>
-        )}
-
-        {success && (
-          <div className="payment-status success">
-            <p>✅ Payment Successful! Booking your seats...</p>
-          </div>
-        )}
-
-        {!success && (
-          <div className="payment-btn-group">
-            <button onClick={handlePayment} disabled={processing}>
-              {processing ? "Processing..." : "Pay Now"}
-            </button>
-            <button onClick={onBack} className="back-btn" disabled={processing}>
-              Back
-            </button>
-          </div>
-        )}
+          <button className="back-btn" onClick={onBack}>
+            Back
+          </button>
+        </div>
       </div>
     </div>
   );

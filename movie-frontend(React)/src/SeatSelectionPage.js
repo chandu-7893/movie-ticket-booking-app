@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import "./SeatSelectionPage.css";
 
 const MAX_SEATS = 6;
@@ -12,8 +12,18 @@ function SeatSelectionPage({ movie, onBack, onProceedToPayment }) {
     : [];
 
   const [selectedSeats, setSelectedSeats] = useState([]);
+  const [lockedSeats, setLockedSeats] = useState(
+    movie.lockedSeats ? movie.lockedSeats.split(",").filter(Boolean) : []
+  );
+  const [toastMsg, setToastMsg] = useState("");
+
   const seatCount = selectedSeats.length;
   const selectedSeatText = selectedSeats.join(", ") || "None";
+
+  const showToast = (message) => {
+    setToastMsg(message);
+    setTimeout(() => setToastMsg(""), 2200);
+  };
 
   const getSeatType = (row) => {
     if (row === "A" || row === "B") return "vip";
@@ -25,18 +35,97 @@ function SeatSelectionPage({ movie, onBack, onProceedToPayment }) {
     return movie.price;
   };
 
-  const toggleSeat = (seat) => {
+  const lockSeatOnServer = async (seat) => {
+    try {
+      const res = await fetch(`http://localhost:8080/api/lock/${movie.id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+        body: JSON.stringify([seat]),
+      });
+
+      if (res.status === 401) {
+        showToast("Session expired. Please login again");
+        setTimeout(() => {
+          localStorage.clear();
+          window.location.reload();
+        }, 1200);
+        return false;
+      }
+
+      if (!res.ok) {
+        throw new Error("Failed to lock seat");
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Lock error:", error);
+      showToast("Unable to lock seat");
+      return false;
+    }
+  };
+
+  const unlockSeatOnServer = async (seat) => {
+    try {
+      const res = await fetch(`http://localhost:8080/api/unlock/${movie.id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+        body: JSON.stringify([seat]),
+      });
+
+      if (res.status === 401) {
+        showToast("Session expired. Please login again");
+        setTimeout(() => {
+          localStorage.clear();
+          window.location.reload();
+        }, 1200);
+        return false;
+      }
+
+      if (!res.ok) {
+        throw new Error("Failed to unlock seat");
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Unlock error:", error);
+      showToast("Unable to unlock seat");
+      return false;
+    }
+  };
+
+  const toggleSeat = async (seat) => {
     if (bookedSeats.includes(seat)) return;
 
     if (selectedSeats.includes(seat)) {
-      setSelectedSeats(selectedSeats.filter((s) => s !== seat));
-    } else {
-      if (selectedSeats.length >= MAX_SEATS) {
-        alert(`You can only select up to ${MAX_SEATS} seats at a time.`);
-        return;
-      }
-      setSelectedSeats([...selectedSeats, seat]);
+      const success = await unlockSeatOnServer(seat);
+      if (!success) return;
+
+      setSelectedSeats((prev) => prev.filter((s) => s !== seat));
+      setLockedSeats((prev) => prev.filter((s) => s !== seat));
+      return;
     }
+
+    if (lockedSeats.includes(seat)) {
+      showToast("Seat temporarily locked");
+      return;
+    }
+
+    if (selectedSeats.length >= MAX_SEATS) {
+      showToast(`You can only select up to ${MAX_SEATS} seats at a time.`);
+      return;
+    }
+
+    const success = await lockSeatOnServer(seat);
+    if (!success) return;
+
+    setSelectedSeats((prev) => [...prev, seat]);
+    setLockedSeats((prev) => [...prev, seat]);
   };
 
   const totalAmount = selectedSeats.reduce((total, seat) => {
@@ -46,14 +135,50 @@ function SeatSelectionPage({ movie, onBack, onProceedToPayment }) {
 
   const handleProceed = () => {
     if (selectedSeats.length === 0) {
-      alert("Please select at least one seat");
+      showToast("Please select at least one seat");
       return;
     }
     onProceedToPayment(selectedSeats);
   };
 
+  const handleBack = async () => {
+    if (selectedSeats.length > 0) {
+      try {
+        await fetch(`http://localhost:8080/api/unlock/${movie.id}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + localStorage.getItem("token"),
+          },
+          body: JSON.stringify(selectedSeats),
+        });
+      } catch (error) {
+        console.error("Bulk unlock on back failed:", error);
+      }
+    }
+
+    onBack();
+  };
+
+  useEffect(() => {
+    return () => {
+      if (selectedSeats.length > 0) {
+        fetch(`http://localhost:8080/api/unlock/${movie.id}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + localStorage.getItem("token"),
+          },
+          body: JSON.stringify(selectedSeats),
+        }).catch((error) => console.error("Cleanup unlock failed:", error));
+      }
+    };
+  }, [selectedSeats, movie.id]);
+
   return (
     <div className="seat-page">
+      {toastMsg && <div className="seat-toast">{toastMsg}</div>}
+
       <div className="seat-box">
         <div className="seat-header">
           <p className="seat-kicker">Choose your experience</p>
@@ -61,7 +186,6 @@ function SeatSelectionPage({ movie, onBack, onProceedToPayment }) {
           <p className="seat-theatre">Theatre: {movie.theatre}</p>
         </div>
 
-        {/* Max seat limit notice */}
         <div className="max-limit-banner">
           ⚠️ Max <strong>{MAX_SEATS}</strong> seats allowed per booking &nbsp;|&nbsp;
           Selected: <strong>{seatCount} / {MAX_SEATS}</strong>
@@ -96,6 +220,10 @@ function SeatSelectionPage({ movie, onBack, onProceedToPayment }) {
               <span className="seat-demo booked"></span>
               <span>Booked</span>
             </div>
+            <div className="legend-item">
+              <span className="seat-demo locked"></span>
+              <span>Locked</span>
+            </div>
           </div>
         </div>
 
@@ -116,10 +244,14 @@ function SeatSelectionPage({ movie, onBack, onProceedToPayment }) {
               {Array.from({ length: seatsPerRow }, (_, i) => {
                 const seat = `${row}${i + 1}`;
                 const isBooked = bookedSeats.includes(seat);
+                const isLocked = lockedSeats.includes(seat);
                 const isSelected = selectedSeats.includes(seat);
                 const seatType = getSeatType(row);
+
                 const isDisabled =
-                  isBooked || (!isSelected && selectedSeats.length >= MAX_SEATS);
+                  isBooked ||
+                  (isLocked && !isSelected) ||
+                  (!isSelected && selectedSeats.length >= MAX_SEATS);
 
                 return (
                   <Fragment key={seat}>
@@ -128,6 +260,8 @@ function SeatSelectionPage({ movie, onBack, onProceedToPayment }) {
                       className={`seat ${seatType} ${
                         isBooked
                           ? "booked"
+                          : isLocked && !isSelected
+                          ? "locked"
                           : isSelected
                           ? "selected"
                           : isDisabled
@@ -139,6 +273,8 @@ function SeatSelectionPage({ movie, onBack, onProceedToPayment }) {
                       title={
                         isBooked
                           ? "Already booked"
+                          : isLocked && !isSelected
+                          ? "Seat temporarily locked"
                           : isDisabled
                           ? `Max ${MAX_SEATS} seats allowed`
                           : seat
@@ -172,7 +308,7 @@ function SeatSelectionPage({ movie, onBack, onProceedToPayment }) {
           <button onClick={handleProceed} className="primary-btn">
             Proceed to Payment
           </button>
-          <button onClick={onBack} className="back-btn">
+          <button onClick={handleBack} className="back-btn">
             Back
           </button>
         </div>

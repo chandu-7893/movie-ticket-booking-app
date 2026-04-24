@@ -62,7 +62,7 @@ public class MovieController {
             @PathVariable int id,
             @RequestBody List<String> selectedSeats,
             Authentication authentication) {
-
+            
         String username = authentication.getName();
         return bookingService.bookTicket(id, selectedSeats, username);
     }

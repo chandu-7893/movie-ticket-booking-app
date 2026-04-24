@@ -14,7 +14,16 @@ public class Movie {
     private int seats;
     private String imageUrl;
     private double price;
-    private String bookedSeats;  
+    private String bookedSeats; 
+    private String lockedSeats; 
+
+    public String getLockedSeats() {
+        return lockedSeats;
+    }
+
+    public void setLockedSeats(String lockedSeats) {
+        this.lockedSeats = lockedSeats;
+    }
 
     public Movie() {
     }

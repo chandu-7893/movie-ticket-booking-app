@@ -5,6 +5,7 @@ import PaymentPage from "./PaymentPage";
 import SeatSelectionPage from "./SeatSelectionPage";
 import BookingHistory from "./BookingHistory";
 import AdminPanel from "./AdminPanel";
+import TicketConfirmation from "./TicketConfirmation";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -23,6 +24,8 @@ function App() {
 
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showTicketPage, setShowTicketPage] = useState(false);
+  const [confirmedTicket, setConfirmedTicket] = useState(null);
 
   const isAdmin = role === "ADMIN";
 
@@ -176,6 +179,20 @@ function App() {
       />
     );
   }
+  if (showTicketPage && confirmedTicket) {
+    return (
+      <TicketConfirmation
+        movie={confirmedTicket.movie}
+        selectedSeats={confirmedTicket.seats}
+        totalAmount={confirmedTicket.totalAmount}
+        onHome={() => {
+          setShowTicketPage(false);
+          setConfirmedTicket(null);
+          fetchMovies();
+        }}
+      />
+    );
+  }
 
   if (showPaymentPage && selectedMovie) {
     return (
@@ -187,7 +204,25 @@ function App() {
           setShowSeatPage(true);
         }}
         onPaymentSuccess={(movieId, seats) => {
+          const totalAmount = seats.reduce((sum, seat) => {
+            const row = seat.charAt(0);
+            return (
+              sum +
+              (row === "A" || row === "B"
+                ? selectedMovie.price + 100
+                : selectedMovie.price)
+            );
+          }, 0);
+
           bookTicket(movieId, seats);
+
+          setConfirmedTicket({
+            movie: selectedMovie,
+            seats: seats,
+            totalAmount: totalAmount,
+          });
+
+          setShowTicketPage(true);
         }}
       />
     );
@@ -242,22 +277,26 @@ function App() {
         ) : (
           filteredMovies.map((movie) => (
             <div className="movie-card" key={movie.id}>
-              <img
-                src={movie.imageUrl || "https://picsum.photos/300/200"}
-                alt={movie.name}
-                className="poster"
-              />
+              <div className="img-wrapper">
+                <img
+                  src={movie.imageUrl || "https://picsum.photos/300/200"}
+                  alt={movie.name}
+                  className="poster"
+                />
 
-              <h2>{movie.name}</h2>
-              <p>📍 {movie.theatre}</p>
-              <p>🎟 Seats: {movie.seats}</p>
-              <p>💰 Price: ₹{movie.price}</p>
+                <div className="overlay">
+                  <button onClick={() => openSeatSelectionPage(movie)}>
+                    🎟 Book Now
+                  </button>
+                </div>
+              </div>
 
-              <button onClick={() => openSeatSelectionPage(movie)}>
-                Book Now
-              </button>
-
-              {isAdmin && <div className="admin-mini-tag">Admin Access</div>}
+              <div className="movie-info">
+                <h2>{movie.name}</h2>
+                <p>📍 {movie.theatre}</p>
+                <p>🎟 {movie.seats} seats</p>
+                <p className="price">₹{movie.price}</p>
+              </div>
             </div>
           ))
         )}

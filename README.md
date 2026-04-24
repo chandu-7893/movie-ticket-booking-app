@@ -1,31 +1,22 @@
-# 🎬 Movie Ticket Booking App
+# 🎬 Movie Ticket Booking System
 
-## 🚀 Tech Stack
+## 🚀 Features
+- User login & booking system
+- Seat selection with real-time UI
+- Admin dashboard with analytics
+- Seat locking & unlocking system
+- Payment UI (UPI, Card, NetBanking)
+- Ticket confirmation page
+
+## 🛠 Tech Stack
 - Frontend: React
 - Backend: Spring Boot
 - Database: MySQL
-- Security: JWT Authentication
 
-## ✨ Features
-- User & Admin Login
-- Role-Based Access Control
-- Movie Booking System
-- Seat Selection
-- Admin Panel (Add, Update, Delete Movies)
-- Secure APIs with JWT
-- Auto Logout on Token Expiry
+## 📸 Screenshots
+(Add your UI screenshots here)
 
-## 📂 Project Structure
-frontend/ → React app  
-backend/ → Spring Boot app  
-
-## ▶️ Run Project
-
-### Frontend
-cd frontend  
-npm install  
-npm start  
-
-### Backend
-Import into Eclipse  
-Run Spring Boot Application  
+## 🔧 How to Run
+1. Start Spring Boot backend
+2. Run React frontend
+3. Open http://localhost:3000
